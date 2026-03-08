@@ -67,6 +67,10 @@ dmypy.json
 # Jupyter
 .ipynb_checkpoints/
 
+# Uploaded files (backend)
+backend/storage/
+storage/
+
 # Database & migrations (local/sensitive)
 *.db
 *.sqlite

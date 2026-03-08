@@ -2,10 +2,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    
-
-    DATABASE_URL: str
+    DATABASE_URL: str 
     OPENAI_API_KEY: str | None = None  # Optional until AI is implemented
+    UPLOAD_DIR: str = "storage"  # Base dir for uploaded files (relative to backend root)
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
