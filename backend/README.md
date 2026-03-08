@@ -1,34 +1,73 @@
-# 🚀 Backend API (FastAPI)
+# Learning AI Tracker & Quiz — Backend
 
-This is the core service for the application, built with **FastAPI** and managed by **uv** for high-performance dependency management.
+FastAPI + PostgreSQL + SQLModel + Alembic. No AI logic yet; project structure and database only.
 
----
+## Stack
 
-## 🛠 Tech Stack
+- **Python 3.12+**
+- **FastAPI**
+- **PostgreSQL**
+- **SQLModel** (ORM)
+- **Alembic** (migrations)
 
-* **Language:** Python 3.12+
-* **Framework:** [FastAPI](https://fastapi.tiangolo.com/)
-* **Package Manager:** [uv](https://github.com/astral-sh/uv)
-* **Server:** [Uvicorn](https://www.uvicorn.org/) (Running on port `8000`)
+## Setup
 
----
+1. Create a PostgreSQL database, e.g. `learning_ai_tracker`.
+2. Set `DATABASE_URL` in `.env` (see `core/config.py` for default).
+3. Install deps (from `backend/`):
 
-## ⚡ Quick Start
+   ```bash
+   uv sync
+   ```
 
-### 1. Prerequisites
-Ensure you have `uv` installed. If not, run:
+4. Run migrations:
 
-**PowerShell (Windows):**
-```powershell
-powershell -c "irm [https://astral-sh.uv.install.sh](https://astral-sh.uv.install.sh) | iex"
+   ```bash
+   alembic upgrade head
+   ```
 
-```bash
-curl -LsSf [https://astral-sh.uv.install.sh](https://astral-sh.uv.install.sh) | sh
+5. Start the API:
 
-📂 Project Structure
+   ```bash
+   uvicorn main:app --reload
+   ```
 
+API: http://localhost:8000 — Docs: http://localhost:8000/docs
+
+## Project layout
+
+```
 backend/
-├── main.py              # Application entry point
-├── app/                 # Logic, routes, and schemas
-├── pyproject.toml       # Modern Python project config
-└── uv.lock              # Locked dependencies
+├── main.py              # FastAPI app
+├── alembic.ini
+├── alembic/
+│   ├── env.py           # Alembic + SQLModel
+│   ├── script.py.mako
+│   └── versions/        # Migrations
+├── app/
+│   ├── models/          # SQLModel models
+│   │   ├── user.py
+│   │   ├── document.py
+│   │   ├── concept.py
+│   │   └── question.py
+│   └── database.py      # Engine, session, create_db_and_tables
+└── core/
+    └── config.py        # Settings (DATABASE_URL, etc.)
+```
+
+## Models
+
+| Model             | Purpose                                                |
+|-------------------|--------------------------------------------------------|
+| **User**          | Account (email, hashed_password, full_name)            |
+| **Document**      | Uploaded doc per user (title, source)                 |
+| **DocumentChunk** | Chunk of document text (for future embedding)          |
+| **Concept**       | Learning concept per document                          |
+| **Question**      | Quiz question per concept (type, options, correct_answer) |
+| **QuestionReview**| User's answer/review per question (was_correct, rating) |
+
+## Commands
+
+- **New migration:** `alembic revision --autogenerate -m "description"`
+- **Apply migrations:** `alembic upgrade head`
+- **Rollback one:** `alembic downgrade -1`

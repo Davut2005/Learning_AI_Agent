@@ -1,0 +1,3 @@
+# Keep migration scripts here.
+# Generate: alembic revision --autogenerate -m "description"
+# Apply:     alembic upgrade head

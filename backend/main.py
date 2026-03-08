@@ -1,16 +1,37 @@
-from fastapi import FastAPI
-from db import create_db_and_tables
+"""Learning AI Tracker & Quiz — FastAPI app. Run with: uvicorn main:app --reload."""
 
-app = FastAPI()
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+
+from app.database import create_db_and_tables
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Optional: create tables if they don't exist (dev). Prefer: alembic upgrade head."""
+    # create_db_and_tables()  # Uncomment for dev without running migrations
+    yield
+
+
+app = FastAPI(
+    title="Learning AI Tracker & Quiz",
+    description="Backend for document-based learning and quiz generation.",
+    version="0.1.0",
+    lifespan=lifespan,
+)
+
 
 @app.get("/")
 def read_root():
-    return {"message": "Hello, World!"}
+    return {"message": "Learning AI Tracker & Quiz API", "docs": "/docs"}
 
-@app.on_event("startup")
-async def startup_event():
-    create_db_and_tables()
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
