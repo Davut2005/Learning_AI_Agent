@@ -38,22 +38,30 @@ API: http://localhost:8000 — Docs: http://localhost:8000/docs
 
 ```
 backend/
-├── main.py              # FastAPI app
+├── main.py              # FastAPI app, includes routers
 ├── alembic.ini
 ├── alembic/
-│   ├── env.py           # Alembic + SQLModel
+│   ├── env.py
 │   ├── script.py.mako
-│   └── versions/        # Migrations
+│   └── versions/
 ├── app/
-│   ├── models/          # SQLModel models
+│   ├── models/          # SQLModel table models (one file per domain)
 │   │   ├── user.py
 │   │   ├── document.py
 │   │   ├── concept.py
 │   │   └── question.py
-│   └── database.py      # Engine, session, create_db_and_tables
+│   ├── schemas/         # Pydantic request/response models (one file per domain)
+│   │   ├── document.py
+│   │   └── youtube.py
+│   ├── routers/         # API route handlers (one file per resource/feature)
+│   │   ├── documents.py # POST /documents/upload
+│   │   └── youtube.py   # POST /documents/youtube
+│   └── database.py
 └── core/
-    └── config.py        # Settings (DATABASE_URL, etc.)
+    └── config.py
 ```
+
+**Conventions:** Keep the project understandable by separating logic: one router file per feature (e.g. documents vs youtube), one schema file per domain, one model file per entity. Add new features in new router/schema files rather than overloading a single file.
 
 ## Models
 

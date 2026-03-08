@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.database import create_db_and_tables
-from app.routers import documents
+from app.routers import documents, youtube
 
 
 @asynccontextmanager
@@ -29,6 +29,7 @@ def read_root():
 
 
 app.include_router(documents.router)
+app.include_router(youtube.router, prefix="/documents")
 
 
 @app.get("/health")

@@ -11,4 +11,5 @@ dependencies = [
     "alembic>=1.14.0",
     "psycopg2-binary>=2.9.10",
     "pydantic-settings>=2.6.0",
+    "youtube-transcript-api>=0.6.0",
 ]
