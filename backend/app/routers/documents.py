@@ -42,6 +42,16 @@ def _validate_file(filename: str, content_type: str | None) -> None:
         pass
 
 
+@router.get("", response_model=list[DocumentMetadata])
+def list_documents(
+    user_id: int,
+    db: Session = Depends(get_session),
+) -> list[DocumentMetadata]:
+    """List documents for a user."""
+    docs = db.exec(select(Document).where(Document.user_id == user_id).order_by(Document.created_at.desc())).all()
+    return [DocumentMetadata.model_validate(d) for d in docs]
+
+
 @router.post("/upload", response_model=DocumentUploadResponse)
 def upload_document(
     background_tasks: BackgroundTasks,

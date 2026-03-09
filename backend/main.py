@@ -3,9 +3,10 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import create_db_and_tables
-from app.routers import chunks, documents, youtube
+from app.routers import chunks, documents, questions, youtube
 
 
 @asynccontextmanager
@@ -21,6 +22,13 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
@@ -31,6 +39,7 @@ def read_root():
 app.include_router(documents.router)
 app.include_router(youtube.router, prefix="/documents")
 app.include_router(chunks.router, prefix="/documents")
+app.include_router(questions.router)
 
 
 @app.get("/health")
