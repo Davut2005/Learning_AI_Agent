@@ -2,8 +2,10 @@
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from sqlalchemy.exc import OperationalError
 
 from app.database import create_db_and_tables
 from app.routers import chunks, documents, questions, youtube
@@ -45,6 +47,16 @@ app.include_router(questions.router)
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.exception_handler(OperationalError)
+def handle_db_unavailable(_request: Request, exc: OperationalError):
+    return JSONResponse(
+        status_code=503,
+        content={
+            "detail": "Database unavailable. Check DATABASE_URL and network (e.g. Supabase host reachable).",
+        },
+    )
 
 
 if __name__ == "__main__":

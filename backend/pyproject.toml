@@ -16,4 +16,5 @@ dependencies = [
     "requests>=2.32.0",
     "chromadb>=1.5.2",
     "sqlalchemy>=2.0.48",
+    "python-multipart>=0.0.22",
 ]
