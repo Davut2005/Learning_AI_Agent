@@ -12,6 +12,7 @@ An AI Agent for users to track their learning path and to help to memorize the s
 |----------|-------------------|
 | Backend  | FastAPI, Python   |
 | Frontend | React 19, Vite, TypeScript |
+| AI       | LangChain + OpenAI (LLM + embeddings) |
 
 ## Quick start
 
@@ -64,7 +65,14 @@ Learning_AI_Agent/
 ## Environment
 
 - Copy `.env.example` to `.env` in `backend/` (and `frontend/` if needed) and set your variables.
+- **Backend:** set `OPENAI_API_KEY` in `backend/.env` (required for LangChain + OpenAI LLM and embeddings).
 - Never commit `.env` or other secrets; they are listed in `.gitignore`.
+
+## Pipeline & database
+
+- **Migrations:** run `alembic upgrade head` in `backend/` so the `document_chunks` table has the `embedding` column. PostgreSQL must have the **pgvector** extension (e.g. Supabase provides it).
+- **After upload (file or YouTube):** the backend runs a background pipeline: chunk → embed (OpenAI) → store vectors → **Agent 1** (concept extraction) → **Agent 2** (quiz question generation). Concepts and questions appear in the DB and in the app once processing finishes.
+- **File types:** only **.txt** and **.md** are currently used for text extraction; PDF/DOCX uploads are stored but not yet processed for concepts/questions.
 
 ## License
 

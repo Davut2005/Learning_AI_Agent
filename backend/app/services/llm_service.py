@@ -1,25 +1,28 @@
 """
-Reusable LLM service for interacting with Ollama local REST API.
+Reusable LLM service using LangChain + OpenAI for chat completion.
 """
 
-import requests
+from langchain_core.messages import HumanMessage
+from langchain_openai import ChatOpenAI
 
-OLLAMA_BASE_URL = "http://localhost:11434"
-GENERATE_URL = f"{OLLAMA_BASE_URL}/api/generate"
-DEFAULT_MODEL = "llama3"
+from core.config import settings
+
+DEFAULT_MODEL = "gpt-4o-mini"
+
+
+def get_llm(model: str = DEFAULT_MODEL) -> ChatOpenAI:
+    """Return a LangChain ChatOpenAI instance."""
+    return ChatOpenAI(
+        model=model,
+        api_key=settings.OPENAI_API_KEY,
+        temperature=0,
+    )
 
 
 def generate_response(prompt: str, model: str = DEFAULT_MODEL) -> str:
     """
-    Send a POST request to the Ollama /api/generate endpoint and return the generated text.
-    Uses stream=false for a single JSON response with the full text.
+    Send the prompt to OpenAI via LangChain and return the generated text.
     """
-    payload = {
-        "model": model,
-        "prompt": prompt,
-        "stream": False,
-    }
-    resp = requests.post(GENERATE_URL, json=payload, timeout=120)
-    resp.raise_for_status()
-    data = resp.json()
-    return data.get("response", "").strip()
+    llm = get_llm(model=model)
+    msg = llm.invoke([HumanMessage(content=prompt)])
+    return (msg.content or "").strip()

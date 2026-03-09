@@ -4,6 +4,7 @@ import uuid
 from pathlib import Path
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
+from sqlalchemy.exc import OperationalError
 from sqlmodel import Session, select
 
 from app.database import get_session
@@ -47,9 +48,12 @@ def list_documents(
     user_id: int,
     db: Session = Depends(get_session),
 ) -> list[DocumentMetadata]:
-    """List documents for a user."""
-    docs = db.exec(select(Document).where(Document.user_id == user_id).order_by(Document.created_at.desc())).all()
-    return [DocumentMetadata.model_validate(d) for d in docs]
+    """List documents for a user. Returns [] when database is unavailable."""
+    try:
+        docs = db.exec(select(Document).where(Document.user_id == user_id).order_by(Document.created_at.desc())).all()
+        return [DocumentMetadata.model_validate(d) for d in docs]
+    except OperationalError:
+        return []
 
 
 @router.post("/upload", response_model=DocumentUploadResponse)

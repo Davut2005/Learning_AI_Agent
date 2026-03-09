@@ -1,30 +1,28 @@
 """
-Embedding service using Ollama embeddings (e.g. nomic-embed-text).
+Embedding service using LangChain + OpenAI embeddings.
 """
 
-import requests
 from typing import List
 
-OLLAMA_BASE_URL = "http://localhost:11434"
-EMBED_URL = f"{OLLAMA_BASE_URL}/api/embed"
-DEFAULT_MODEL = "nomic-embed-text"
+from langchain_openai import OpenAIEmbeddings
+
+from core.config import settings
+
+DEFAULT_MODEL = "text-embedding-3-small"
+
+
+def get_embeddings(model: str = DEFAULT_MODEL) -> OpenAIEmbeddings:
+    """Return a LangChain OpenAIEmbeddings instance."""
+    return OpenAIEmbeddings(
+        model=model,
+        api_key=settings.OPENAI_API_KEY,
+    )
 
 
 def create_embedding(text: str, model: str = DEFAULT_MODEL) -> List[float]:
     """
-    Send a POST request to Ollama /api/embed and return the embedding vector.
-    Uses nomic-embed-text by default (ollama pull nomic-embed-text).
+    Create an embedding vector for the given text using OpenAI.
+    Returns a list of floats.
     """
-    payload = {
-        "model": model,
-        "input": text,
-    }
-    resp = requests.post(EMBED_URL, json=payload, timeout=60)
-    resp.raise_for_status()
-    data = resp.json()
-    # Response: {"embeddings": [[...]]} or {"embedding": [...]}
-    emb = data.get("embeddings") or data.get("embedding")
-    if not emb:
-        return []
-    # Single vector: emb is list of floats, or list of one vector
-    return list(emb[0]) if emb and isinstance(emb[0], list) else list(emb)
+    embeddings = get_embeddings(model=model)
+    return embeddings.embed_query(text)

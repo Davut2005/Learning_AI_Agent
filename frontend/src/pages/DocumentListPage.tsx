@@ -22,7 +22,7 @@ export default function DocumentListPage() {
   return (
     <div className="page">
       <h1>Document list</h1>
-      <p className="muted">Your uploaded documents (user_id = {USER_ID}).</p>
+      <p className="muted">Your uploaded documents .</p>
       {docs.length === 0 ? (
         <p>No documents yet. Upload a file or add a YouTube link from the Upload page.</p>
       ) : (

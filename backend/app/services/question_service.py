@@ -1,5 +1,5 @@
 """
-Question generation service: generate quiz questions for concepts using the LLM (Ollama Llama3).
+Question generation service: generate quiz questions for concepts using the LLM (LangChain + OpenAI).
 """
 
 import json

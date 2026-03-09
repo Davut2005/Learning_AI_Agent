@@ -1,6 +1,6 @@
 """
 Concept extraction service: extract technical concepts from document chunks using the LLM.
-Optimized for local Ollama (Llama3) with robust JSON parsing and duplicate handling.
+Uses LangChain + OpenAI with robust JSON parsing and duplicate handling.
 """
 
 import json
@@ -87,7 +87,7 @@ def _parse_concepts_response(response: str) -> List[str]:
 
 def extract_concepts_from_chunk(document_id: str, chunk_text: str) -> List[str]:
     """
-    Extract technical concepts from chunk text via LLM (Llama3), insert into concepts table,
+    Extract technical concepts from chunk text via LLM (LangChain + OpenAI), insert into concepts table,
     skip duplicates for the same document. Returns the list of inserted concept names.
     """
     if not chunk_text or not chunk_text.strip():

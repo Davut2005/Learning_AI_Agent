@@ -1,6 +1,7 @@
 """
-Vector storage service using Supabase PostgreSQL pgvector for document chunk embeddings.
-Table: document_chunks (id uuid, document_id uuid, text text, embedding vector(768))
+Vector storage using PostgreSQL pgvector on document_chunks.
+Chunks are created first (content, chunk_index); this service updates their embedding column.
+Embedding dimension 1536 matches OpenAI text-embedding-3-small (LangChain + OpenAI).
 """
 
 from typing import Any, List
@@ -22,17 +23,18 @@ def insert_chunk_embedding(
     embedding: List[float],
 ) -> None:
     """
-    Insert a new row into document_chunks with id, document_id, text, and embedding.
-    Converts the Python embedding list to PostgreSQL pgvector format.
+    Update the existing document_chunks row with the embedding.
+    Chunk row must already exist (created by chunking or YouTube ingest).
     """
     embedding_str = _embedding_to_pgvector(embedding)
     with engine.connect() as conn:
         conn.execute(
             text("""
-                INSERT INTO document_chunks (id, document_id, text, embedding)
-                VALUES (:id, :document_id, :text, :embedding::vector)
+                UPDATE document_chunks
+                SET embedding = :embedding::vector
+                WHERE id = :chunk_id
             """),
-            {"id": chunk_id, "document_id": document_id, "text": text, "embedding": embedding_str},
+            {"chunk_id": chunk_id, "embedding": embedding_str},
         )
         conn.commit()
 
@@ -43,15 +45,15 @@ def search_similar_chunks(
 ) -> List[dict[str, Any]]:
     """
     Return the most similar stored chunks by L2 distance (<->).
-    Runs: SELECT id, document_id, text FROM document_chunks
-          ORDER BY embedding <-> :embedding::vector LIMIT :top_k
+    Uses document_chunks.content and document_chunks.embedding.
     """
     embedding_str = _embedding_to_pgvector(embedding)
     with engine.connect() as conn:
         result = conn.execute(
             text("""
-                SELECT id, document_id, text
+                SELECT id, document_id, content
                 FROM document_chunks
+                WHERE embedding IS NOT NULL
                 ORDER BY embedding <-> :embedding::vector
                 LIMIT :top_k
             """),

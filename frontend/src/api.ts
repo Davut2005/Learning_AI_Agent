@@ -27,7 +27,10 @@ export async function uploadFile(file: File, userId: number): Promise<{ document
   });
   if (!r.ok) {
     const err = await r.json().catch(() => ({ detail: r.statusText }));
-    throw new Error(err.detail || "Upload failed");
+    const msg = r.status === 503
+      ? "Service temporarily unavailable. The database may be offline—check your connection or try again later."
+      : (err.detail || "Upload failed");
+    throw new Error(msg);
   }
   return r.json();
 }
@@ -42,7 +45,10 @@ export async function uploadYoutube(url: string, userId: number): Promise<{ docu
   });
   if (!r.ok) {
     const err = await r.json().catch(() => ({ detail: r.statusText }));
-    throw new Error(err.detail || "YouTube ingest failed");
+    const msg = r.status === 503
+      ? "Service temporarily unavailable. The database may be offline—check your connection or try again later."
+      : (err.detail || "YouTube ingest failed");
+    throw new Error(msg);
   }
   return r.json();
 }
