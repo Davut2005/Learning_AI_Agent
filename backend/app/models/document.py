@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 from datetime import datetime, timezone
 from sqlalchemy import Column, Text
+from sqlalchemy.orm import relationship
 from sqlmodel import Field, SQLModel, Relationship
 
 
@@ -19,7 +22,9 @@ class Document(SQLModel, table=True):
     created_at: datetime = Field(default_factory=_utc_now)
     updated_at: datetime = Field(default_factory=_utc_now)
 
-    chunks: list["DocumentChunk"] = Relationship(back_populates="document")
+    chunks: list["DocumentChunk"] = Relationship(
+        sa_relationship=relationship("DocumentChunk", back_populates="document"),
+    )
 
 
 class DocumentChunk(SQLModel, table=True):
@@ -33,4 +38,6 @@ class DocumentChunk(SQLModel, table=True):
     chunk_index: int = Field(default=0, description="Order within the document")
     created_at: datetime = Field(default_factory=_utc_now)
 
-    document: Document | None = Relationship(back_populates="chunks")
+    document: Document | None = Relationship(
+        sa_relationship=relationship("Document", back_populates="chunks"),
+    )

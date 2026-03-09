@@ -34,25 +34,25 @@ Return ONLY valid JSON.
 
 Format:
 
-{
+{{
  "questions":[
-  {
+  {{
    "question":"...",
    "answer":"...",
    "difficulty":"easy"
-  },
-  {
+  }},
+  {{
    "question":"...",
    "answer":"...",
    "difficulty":"medium"
-  },
-  {
+  }},
+  {{
    "question":"...",
    "answer":"...",
    "difficulty":"hard"
-  }
+  }}
  ]
-}
+}}
 """
 
 

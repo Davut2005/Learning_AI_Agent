@@ -70,9 +70,11 @@ Learning_AI_Agent/
 
 ## Pipeline & database
 
-- **Migrations:** run `alembic upgrade head` in `backend/` so the `document_chunks` table has the `embedding` column. PostgreSQL must have the **pgvector** extension (e.g. Supabase provides it).
-- **After upload (file or YouTube):** the backend runs a background pipeline: chunk → embed (OpenAI) → store vectors → **Agent 1** (concept extraction) → **Agent 2** (quiz question generation). Concepts and questions appear in the DB and in the app once processing finishes.
-- **File types:** only **.txt** and **.md** are currently used for text extraction; PDF/DOCX uploads are stored but not yet processed for concepts/questions.
+- **Schema (SQLModel):** On startup the backend runs `init_db()`: it enables the **pgvector** extension, creates all tables (users, documents, document_chunks, concepts, questions, question_reviews), and adds the `document_chunks.embedding` column if missing. **Use an empty database** — run `uv run main.py` and all tables are created automatically. No migrations.
+- **Default user:** If no users exist, a default user is created (email=dev@local.app, id=1) so upload/YouTube work without auth. **Login and proper user storage will be added later.**
+- **After upload (file or YouTube):** background pipeline: chunk → embed (OpenAI) → store vectors → **Agent 1** (concept extraction) → **Agent 2** (quiz generation). Concepts and questions appear once processing finishes.
+- **File types:** only **.txt** and **.md** are used for text extraction; PDF/DOCX are stored but not processed.
+
 
 ## License
 

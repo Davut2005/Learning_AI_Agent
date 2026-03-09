@@ -59,7 +59,8 @@ def ingest_youtube_transcript(
         raise HTTPException(status_code=404, detail="User not found")
 
     try:
-        transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
+        transcript = YouTubeTranscriptApi().fetch(video_id)
+        raw = transcript.to_raw_data()
     except (TranscriptsDisabled, NoTranscriptFound) as e:
         raise HTTPException(
             status_code=422,
@@ -71,7 +72,7 @@ def ingest_youtube_transcript(
             detail=f"Failed to fetch transcript: {e!s}",
         ) from e
 
-    full_text = " ".join(item["text"] for item in transcript_list).strip()
+    full_text = " ".join(item["text"] for item in raw).strip()
     if not full_text:
         raise HTTPException(
             status_code=422,

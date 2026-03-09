@@ -7,14 +7,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import OperationalError
 
-from app.database import create_db_and_tables
+from app.database import init_db
 from app.routers import chunks, documents, questions, youtube
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Optional: create tables if they don't exist (dev). Prefer: alembic upgrade head."""
-    # create_db_and_tables()  # Uncomment for dev without running migrations
+    """Create tables and ensure pgvector/embedding column on startup (SQLModel, no Alembic)."""
+    init_db()
     yield
 
 

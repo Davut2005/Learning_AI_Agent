@@ -19,7 +19,7 @@ def _embedding_to_pgvector(embedding: List[float]) -> str:
 def insert_chunk_embedding(
     chunk_id: str,
     document_id: str,
-    text: str,
+    content: str,
     embedding: List[float],
 ) -> None:
     """
@@ -31,7 +31,7 @@ def insert_chunk_embedding(
         conn.execute(
             text("""
                 UPDATE document_chunks
-                SET embedding = :embedding::vector
+                SET embedding = :embedding \:\:vector
                 WHERE id = :chunk_id
             """),
             {"chunk_id": chunk_id, "embedding": embedding_str},
@@ -54,7 +54,7 @@ def search_similar_chunks(
                 SELECT id, document_id, content
                 FROM document_chunks
                 WHERE embedding IS NOT NULL
-                ORDER BY embedding <-> :embedding::vector
+                ORDER BY embedding <-> :embedding \:\:vector
                 LIMIT :top_k
             """),
             {"embedding": embedding_str, "top_k": top_k},

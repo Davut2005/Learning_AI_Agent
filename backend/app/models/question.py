@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from sqlalchemy import Column, Text
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import relationship
 from sqlmodel import Field, SQLModel, Relationship
 
 
@@ -26,8 +27,12 @@ class Question(SQLModel, table=True):
     correct_answer: str = Field(sa_column=Column(Text(), nullable=False))
     created_at: datetime = Field(default_factory=_utc_now)
 
-    concept: Concept | None = Relationship(back_populates="questions")
-    reviews: list["QuestionReview"] = Relationship(back_populates="question")
+    concept: Concept | None = Relationship(
+        sa_relationship=relationship("Concept", back_populates="questions"),
+    )
+    reviews: list["QuestionReview"] = Relationship(
+        sa_relationship=relationship("QuestionReview", back_populates="question"),
+    )
 
 
 class QuestionReview(SQLModel, table=True):
@@ -42,4 +47,6 @@ class QuestionReview(SQLModel, table=True):
     rating: int | None = Field(default=None, ge=1, le=5)
     reviewed_at: datetime = Field(default_factory=_utc_now)
 
-    question: Question | None = Relationship(back_populates="reviews")
+    question: Question | None = Relationship(
+        sa_relationship=relationship("Question", back_populates="reviews"),
+    )

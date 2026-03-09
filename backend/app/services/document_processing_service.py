@@ -90,7 +90,7 @@ def process_document(document_id: int) -> None:
                 insert_chunk_embedding(
                     chunk_id=str(chunk_id),
                     document_id=doc_id_str,
-                    text=content,
+                    content=content,
                     embedding=embedding,
                 )
                 # Concept extraction

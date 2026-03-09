@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from sqlalchemy import Column, Text
+from sqlalchemy.orm import relationship
 from sqlmodel import Field, SQLModel, Relationship
 
 
@@ -20,4 +21,6 @@ class Concept(SQLModel, table=True):
     description: str | None = Field(default=None, sa_column=Column(Text(), nullable=True))
     created_at: datetime = Field(default_factory=_utc_now)
 
-    questions: list["Question"] = Relationship(back_populates="concept")
+    questions: list["Question"] = Relationship(
+        sa_relationship=relationship("Question", back_populates="concept"),
+    )

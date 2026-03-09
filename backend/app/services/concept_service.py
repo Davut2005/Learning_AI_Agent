@@ -31,9 +31,9 @@ Rules:
 Return ONLY valid JSON.
 
 JSON format:
-{
+{{
  "concepts": ["concept1","concept2","concept3"]
-}
+}}
 
 Text:
 {chunk_text}
