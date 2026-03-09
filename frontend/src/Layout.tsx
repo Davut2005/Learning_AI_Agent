@@ -1,5 +1,6 @@
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useNavigate } from "react-router-dom";
 import { useTheme } from "./ThemeContext";
+import { useAuth } from "./AuthContext";
 
 function SunIcon() {
   return (
@@ -20,15 +21,40 @@ function MoonIcon() {
 
 export default function Layout() {
   const { theme, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    logout();
+    navigate("/");
+  }
+
   return (
     <div className="layout">
       <nav className="nav">
         <Link to="/">Learning AI</Link>
-        <Link to="/upload">Upload</Link>
-        <Link to="/documents">Documents</Link>
-        <Link to="/quiz">Quiz</Link>
-        <Link to="/dashboard">Dashboard</Link>
+        {user && (
+          <>
+            <Link to="/upload">Upload</Link>
+            <Link to="/documents">Documents</Link>
+            <Link to="/quiz">Quiz</Link>
+            <Link to="/dashboard">Dashboard</Link>
+          </>
+        )}
         <span className="nav-spacer" />
+        {user ? (
+          <span className="nav-user">
+            <span className="nav-user-email">{user.email}</span>
+            <button type="button" className="btn-logout" onClick={handleLogout}>
+              Log out
+            </button>
+          </span>
+        ) : (
+          <>
+            <Link to="/login">Log in</Link>
+            <Link to="/signup">Sign up</Link>
+          </>
+        )}
         <button type="button" className="theme-toggle" onClick={toggleTheme} aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}>
           {theme === "dark" ? <SunIcon /> : <MoonIcon />}
           <span>{theme === "dark" ? "Light" : "Dark"}</span>

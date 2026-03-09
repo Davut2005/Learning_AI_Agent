@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import OperationalError
 
 from app.database import init_db
-from app.routers import chunks, documents, questions, youtube
+from app.routers import auth, chunks, documents, questions, youtube
 
 
 @asynccontextmanager
@@ -38,6 +38,7 @@ def read_root():
     return {"message": "Learning AI Tracker & Quiz API", "docs": "/docs"}
 
 
+app.include_router(auth.router)
 app.include_router(documents.router)
 app.include_router(youtube.router, prefix="/documents")
 app.include_router(chunks.router, prefix="/documents")

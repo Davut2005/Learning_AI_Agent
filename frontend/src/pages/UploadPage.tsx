@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { uploadFile, uploadYoutube } from "../api";
 
-const DEFAULT_USER_ID = 1;
-
 export default function UploadPage() {
-  const [userId] = useState(DEFAULT_USER_ID);
   const [file, setFile] = useState<File | null>(null);
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [loading, setLoading] = useState<"file" | "youtube" | null>(null);
@@ -19,7 +16,7 @@ export default function UploadPage() {
     setMessage(null);
     setLoading("file");
     try {
-      const res = await uploadFile(file, userId);
+      const res = await uploadFile(file);
       setMessage({ type: "ok", text: `Uploaded: ${res.document.title}. Processing in background.` });
       setFile(null);
     } catch (err) {
@@ -39,7 +36,7 @@ export default function UploadPage() {
     setMessage(null);
     setLoading("youtube");
     try {
-      await uploadYoutube(url, userId);
+      await uploadYoutube(url);
       setMessage({ type: "ok", text: "YouTube transcript ingested. Processing in background." });
       setYoutubeUrl("");
     } catch (err) {
@@ -52,7 +49,7 @@ export default function UploadPage() {
   return (
     <div className="page">
       <h1>Upload</h1>
-      <p className="muted">Add content for learning. Use user_id = {userId} (change in code if needed).</p>
+      <p className="muted">Add content for learning. File or YouTube transcript will be processed in the background.</p>
 
       {message && (
         <div className={`message ${message.type}`}>

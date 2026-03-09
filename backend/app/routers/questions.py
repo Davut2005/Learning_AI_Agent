@@ -1,28 +1,29 @@
-"""List questions for quiz (by user or document)."""
+"""List questions for quiz (by current user or document)."""
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.exc import OperationalError
 from sqlmodel import Session, select
 
 from app.database import get_session
-from app.models import Concept, Document, Question
+from app.models import Concept, Document, Question, User
 from app.schemas.question import QuestionOut
+from app.routers.auth import get_current_user
 
 router = APIRouter(prefix="/questions", tags=["questions"])
 
 
 @router.get("", response_model=list[QuestionOut])
 def list_questions(
-    user_id: int = Query(..., description="Filter by document owner"),
+    current_user: User = Depends(get_current_user),
     document_id: int | None = Query(None, description="Optional: filter by document"),
     db: Session = Depends(get_session),
 ) -> list[QuestionOut]:
-    """List questions for quiz: by user_id, optionally by document_id. Returns [] when database is unavailable."""
+    """List questions for quiz for the current user, optionally filtered by document_id. Returns [] when database is unavailable."""
     try:
         if document_id is not None:
             concept_ids = select(Concept.id).where(Concept.document_id == document_id)
         else:
-            doc_ids = select(Document.id).where(Document.user_id == user_id)
+            doc_ids = select(Document.id).where(Document.user_id == current_user.id)
             concept_ids = select(Concept.id).where(Concept.document_id.in_(doc_ids))
         questions = db.exec(select(Question).where(Question.concept_id.in_(concept_ids))).all()
         return [QuestionOut.model_validate(x) for x in questions]

@@ -4,12 +4,13 @@ from urllib.parse import parse_qs, urlparse
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api._errors import TranscriptsDisabled, NoTranscriptFound
 from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 from app.database import get_session
 from app.models import Document, DocumentChunk, User
 from app.schemas.youtube import YouTubeIngestResponse
 from app.services.document_processing_service import process_document
+from app.routers.auth import get_current_user
 
 
 # Mount with prefix="/documents" in main.py → POST /documents/youtube
@@ -41,8 +42,8 @@ def _extract_youtube_video_id(url: str) -> str | None:
 @router.post("/youtube", response_model=YouTubeIngestResponse)
 def ingest_youtube_transcript(
     background_tasks: BackgroundTasks,
+    current_user: User = Depends(get_current_user),
     youtube_url: str = Form(..., description="Full YouTube video URL"),
-    user_id: int = Form(...),
     db: Session = Depends(get_session),
 ) -> YouTubeIngestResponse:
     """
@@ -53,10 +54,6 @@ def ingest_youtube_transcript(
     video_id = _extract_youtube_video_id(youtube_url)
     if not video_id:
         raise HTTPException(status_code=400, detail="Invalid YouTube URL")
-
-    user = db.exec(select(User).where(User.id == user_id)).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
 
     try:
         transcript = YouTubeTranscriptApi().fetch(video_id)
@@ -85,7 +82,7 @@ def ingest_youtube_transcript(
     source = f"https://www.youtube.com/watch?v={video_id}"
 
     doc = Document(
-        user_id=user_id,
+        user_id=current_user.id,
         title=title,
         source=source,
     )

@@ -65,13 +65,13 @@ Learning_AI_Agent/
 ## Environment
 
 - Copy `.env.example` to `.env` in `backend/` (and `frontend/` if needed) and set your variables.
-- **Backend:** set `OPENAI_API_KEY` in `backend/.env` (required for LangChain + OpenAI LLM and embeddings).
+- **Backend:** set `OPENAI_API_KEY` in `backend/.env` (required for LangChain + OpenAI). For auth, set `SECRET_KEY` (e.g. `openssl rand -hex 32`); default is a dev-only value.
 - Never commit `.env` or other secrets; they are listed in `.gitignore`.
 
 ## Pipeline & database
 
 - **Schema (SQLModel):** On startup the backend runs `init_db()`: it enables the **pgvector** extension, creates all tables (users, documents, document_chunks, concepts, questions, question_reviews), and adds the `document_chunks.embedding` column if missing. **Use an empty database** — run `uv run main.py` and all tables are created automatically. No migrations.
-- **Default user:** If no users exist, a default user is created (email=dev@local.app, id=1) so upload/YouTube work without auth. **Login and proper user storage will be added later.**
+- **Auth:** Sign up and log in via the app (JWT). Upload, documents, quiz, and dashboard require authentication. If no users exist at first run, a default user (dev@local.app) is still created for quick dev testing.
 - **After upload (file or YouTube):** background pipeline: chunk → embed (OpenAI) → store vectors → **Agent 1** (concept extraction) → **Agent 2** (quiz generation). Concepts and questions appear once processing finishes.
 - **File types:** only **.txt** and **.md** are used for text extraction; PDF/DOCX are stored but not processed.
 

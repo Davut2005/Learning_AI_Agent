@@ -7,6 +7,7 @@ from sqlalchemy.exc import OperationalError
 from sqlmodel import Session, create_engine, SQLModel, select
 
 from core.config import settings
+from app.core.security import hash_password
 from app.models import (  # noqa: F401 — register models with metadata
     User,
     Document,
@@ -58,7 +59,7 @@ def init_db() -> None:
                 session.add(
                     User(
                         email="dev@local.app",
-                        hashed_password="dev",
+                        hashed_password=hash_password("dev"),
                         full_name="Dev User",
                     )
                 )

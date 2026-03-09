@@ -2,15 +2,13 @@ import { useEffect, useState } from "react";
 import { getDocuments } from "../api";
 import type { DocumentItem } from "../api";
 
-const USER_ID = 1;
-
 export default function DocumentListPage() {
   const [docs, setDocs] = useState<DocumentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getDocuments(USER_ID)
+    getDocuments()
       .then(setDocs)
       .catch((e) => setError(e instanceof Error ? e.message : "Failed to load"))
       .finally(() => setLoading(false));

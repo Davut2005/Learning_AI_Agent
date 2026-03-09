@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { getQuestions } from "../api";
 import type { QuestionItem } from "../api";
 
-const USER_ID = 1;
-
 export default function QuizPage() {
   const [questions, setQuestions] = useState<QuestionItem[]>([]);
   const [index, setIndex] = useState(0);
@@ -14,7 +12,7 @@ export default function QuizPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getQuestions(USER_ID)
+    getQuestions()
       .then((q) => {
         setQuestions(q);
         setScore({ correct: 0, total: q.length });

@@ -1,15 +1,13 @@
 import { useEffect, useState } from "react";
 import { getDocuments, getQuestions } from "../api";
 
-const USER_ID = 1;
-
 export default function DashboardPage() {
   const [docCount, setDocCount] = useState(0);
   const [questionCount, setQuestionCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([getDocuments(USER_ID), getQuestions(USER_ID)])
+    Promise.all([getDocuments(), getQuestions()])
       .then(([docs, questions]) => {
         setDocCount(docs.length);
         setQuestionCount(questions.length);

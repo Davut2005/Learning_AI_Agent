@@ -3,7 +3,7 @@
 import uuid
 from pathlib import Path
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, UploadFile
 from sqlalchemy.exc import OperationalError
 from sqlmodel import Session, select
 
@@ -11,6 +11,7 @@ from app.database import get_session
 from app.models import Document, User
 from app.schemas.document import DocumentMetadata, DocumentUploadResponse
 from app.services.document_processing_service import process_document
+from app.routers.auth import get_current_user
 from core.config import settings
 
 router = APIRouter(prefix="/documents", tags=["documents"])
@@ -45,12 +46,12 @@ def _validate_file(filename: str, content_type: str | None) -> None:
 
 @router.get("", response_model=list[DocumentMetadata])
 def list_documents(
-    user_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_session),
 ) -> list[DocumentMetadata]:
-    """List documents for a user. Returns [] when database is unavailable."""
+    """List documents for the current user. Returns [] when database is unavailable."""
     try:
-        docs = db.exec(select(Document).where(Document.user_id == user_id).order_by(Document.created_at.desc())).all()
+        docs = db.exec(select(Document).where(Document.user_id == current_user.id).order_by(Document.created_at.desc())).all()
         return [DocumentMetadata.model_validate(d) for d in docs]
     except OperationalError:
         return []
@@ -59,8 +60,8 @@ def list_documents(
 @router.post("/upload", response_model=DocumentUploadResponse)
 def upload_document(
     background_tasks: BackgroundTasks,
+    current_user: User = Depends(get_current_user),
     file: UploadFile = File(...),
-    user_id: int = Form(...),
     db: Session = Depends(get_session),
 ) -> DocumentUploadResponse:
     """
@@ -69,19 +70,15 @@ def upload_document(
     """
     _validate_file(file.filename or "", file.content_type)
 
-    user = db.exec(select(User).where(User.id == user_id)).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
     upload_root = _get_upload_root()
-    user_dir = upload_root / "documents" / str(user_id)
+    user_dir = upload_root / "documents" / str(current_user.id)
     user_dir.mkdir(parents=True, exist_ok=True)
 
     suffix = Path(file.filename or "file").suffix.lower()
     unique_name = f"{uuid.uuid4().hex}{suffix}"
     file_path = user_dir / unique_name
     # Relative path for DB (portable): documents/{user_id}/{unique_name}
-    source_rel = f"documents/{user_id}/{unique_name}"
+    source_rel = f"documents/{current_user.id}/{unique_name}"
 
     try:
         contents = file.file.read()
@@ -95,7 +92,7 @@ def upload_document(
         title = title[:509] + "..."
 
     doc = Document(
-        user_id=user_id,
+        user_id=current_user.id,
         title=title,
         source=source_rel,
     )
