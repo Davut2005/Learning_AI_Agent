@@ -1,0 +1,21 @@
+User uploads document
+        ↓
+Text extraction
+        ↓
+Chunking
+        ↓
+Embeddings (nomic-embed-text)
+        ↓
+Store vectors (Supabase pgvector)
+        ↓
+Agent 1: Concept extraction
+        ↓
+Concept database
+        ↓
+Agent 2: Quiz generation
+        ↓
+Question database
+        ↓
+Spaced repetition scheduler
+        ↓
+User quiz interface

@@ -3,12 +3,13 @@
 import uuid
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
 from sqlmodel import Session, select
 
 from app.database import get_session
 from app.models import Document, User
 from app.schemas.document import DocumentMetadata, DocumentUploadResponse
+from app.services.document_processing_service import process_document
 from core.config import settings
 
 router = APIRouter(prefix="/documents", tags=["documents"])
@@ -43,6 +44,7 @@ def _validate_file(filename: str, content_type: str | None) -> None:
 
 @router.post("/upload", response_model=DocumentUploadResponse)
 def upload_document(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     user_id: int = Form(...),
     db: Session = Depends(get_session),
@@ -86,6 +88,8 @@ def upload_document(
     db.add(doc)
     db.commit()
     db.refresh(doc)
+
+    background_tasks.add_task(process_document, doc.id)
 
     return DocumentUploadResponse(
         document=DocumentMetadata.model_validate(doc),

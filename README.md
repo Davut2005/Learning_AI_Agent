@@ -3,6 +3,9 @@
 A full-stack app with a **FastAPI** backend and **React** (Vite) frontend.
 An AI Agent for users to track their learning path and to help to memorize the skills.
 
+## Agent 1 - Knowledge Extraction Agent
+## Agent 2 - Quiz Generation Agent
+
 ## Stack
 
 | Part     | Tech              |

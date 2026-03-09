@@ -3,12 +3,13 @@ from urllib.parse import parse_qs, urlparse
 
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api._errors import TranscriptsDisabled, NoTranscriptFound
-from fastapi import APIRouter, Depends, Form, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, Form, HTTPException
 from sqlmodel import Session, select
 
 from app.database import get_session
 from app.models import Document, DocumentChunk, User
 from app.schemas.youtube import YouTubeIngestResponse
+from app.services.document_processing_service import process_document
 
 
 # Mount with prefix="/documents" in main.py → POST /documents/youtube
@@ -39,6 +40,7 @@ def _extract_youtube_video_id(url: str) -> str | None:
 
 @router.post("/youtube", response_model=YouTubeIngestResponse)
 def ingest_youtube_transcript(
+    background_tasks: BackgroundTasks,
     youtube_url: str = Form(..., description="Full YouTube video URL"),
     user_id: int = Form(...),
     db: Session = Depends(get_session),
@@ -97,5 +99,7 @@ def ingest_youtube_transcript(
     )
     db.add(chunk)
     db.commit()
+
+    background_tasks.add_task(process_document, doc.id)
 
     return YouTubeIngestResponse(document_id=doc.id)
