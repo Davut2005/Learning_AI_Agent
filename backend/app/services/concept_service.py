@@ -1,94 +1,133 @@
 """
 Concept extraction service: extract technical concepts from document chunks using the LLM.
+Optimized for local Ollama (Llama3) with robust JSON parsing and duplicate handling.
 """
 
 import json
+import logging
 import re
-from typing import List, Union
+from typing import List
 
 from sqlmodel import Session, select
 
+from app.database import engine
 from app.models import Concept
 from app.services.llm_service import generate_response
 
-PROMPT_TEMPLATE = """Extract the key technical concepts from the following text.
+logger = logging.getLogger(__name__)
+
+PROMPT_TEMPLATE = """You are a technical knowledge extractor.
+
+Your task is to identify the most important learning concepts from a technical text.
 
 Rules:
-- Only extract important learning concepts.
-- Avoid generic words like "introduction", "example", "code".
-- Return at most 5 concepts.
-- Return ONLY valid JSON.
+- Extract only meaningful technical concepts.
+- Avoid generic words such as: example, code, introduction, section, snippet, tutorial.
+- Concepts must be between 1 and 4 words.
+- Prefer specific technologies, APIs, algorithms, programming ideas, or software components.
+- Maximum 5 concepts.
+- Do NOT explain anything.
 
-Format:
+Return ONLY valid JSON.
 
+JSON format:
 {
-  "concepts": [
-    "concept1",
-    "concept2",
-    "concept3"
-  ]
+ "concepts": ["concept1","concept2","concept3"]
 }
 
 Text:
-{text_chunk}
+{chunk_text}
 """
 
 
-def _parse_concepts_response(response: str) -> List[str]:
-    """Parse LLM response into a list of concept strings. Handles markdown code blocks."""
+def _clean_llm_json_output(response: str) -> str:
+    """
+    Clean the LLM output before parsing JSON:
+    - Remove ```json and ``` if present
+    - Remove leading or trailing text outside the JSON
+    - Trim whitespace
+    """
     text = response.strip()
-    # Remove optional ```json ... ``` wrapper
-    match = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", text)
-    if match:
-        text = match.group(1).strip()
-    data = json.loads(text)
-    concepts = data.get("concepts") or []
+    # Remove markdown code block
+    text = re.sub(r"^```(?:json)?\s*", "", text)
+    text = re.sub(r"\s*```\s*$", "", text)
+    text = text.strip()
+    # Try to find JSON object (first { to last })
+    start = text.find("{")
+    end = text.rfind("}")
+    if start != -1 and end != -1 and end >= start:
+        text = text[start : end + 1]
+    return text.strip()
+
+
+def _parse_concepts_response(response: str) -> List[str]:
+    """
+    Parse LLM response into a list of concept strings.
+    Returns empty list on any parse error; logs failure for debugging.
+    """
+    cleaned = _clean_llm_json_output(response)
+    if not cleaned:
+        logger.warning("Concept extraction: cleaned LLM output is empty")
+        return []
+    try:
+        data = json.loads(cleaned)
+    except json.JSONDecodeError as e:
+        logger.warning(
+            "Concept extraction: invalid JSON from model. error=%s raw=%s",
+            e,
+            response[:500] if response else "",
+        )
+        return []
+    concepts = data.get("concepts")
+    if not isinstance(concepts, list):
+        logger.warning("Concept extraction: 'concepts' is not a list. keys=%s", data.keys() if isinstance(data, dict) else type(data))
+        return []
     return [c.strip() for c in concepts if isinstance(c, str) and c.strip()]
 
 
-def extract_concepts_from_chunk(
-    document_id: Union[int, str],
-    chunk_text: str,
-    db: Session,
-) -> List[str]:
+def extract_concepts_from_chunk(document_id: str, chunk_text: str) -> List[str]:
     """
-    Extract technical concepts from chunk text via LLM, insert into concepts table,
-    skip duplicates for the same document. Returns the list of extracted concept names.
-    document_id can be int or str (converted to int for the DB).
+    Extract technical concepts from chunk text via LLM (Llama3), insert into concepts table,
+    skip duplicates for the same document. Returns the list of inserted concept names.
     """
-    doc_id = int(document_id) if isinstance(document_id, str) else document_id
     if not chunk_text or not chunk_text.strip():
         return []
 
-    prompt = PROMPT_TEMPLATE.format(text_chunk=chunk_text.strip())
+    try:
+        doc_id = int(document_id)
+    except (ValueError, TypeError):
+        logger.warning("Concept extraction: document_id must be numeric, got %r", document_id)
+        return []
+
+    prompt = PROMPT_TEMPLATE.format(chunk_text=chunk_text.strip())
     response = generate_response(prompt)
     concepts = _parse_concepts_response(response)
     if not concepts:
         return []
 
-    # Existing concept names for this document (case-insensitive dedup)
-    existing = {
-        (row[0] or "").lower()
-        for row in db.exec(
-            select(Concept.name).where(Concept.document_id == doc_id)
-        ).all()
-    }
-
     inserted: List[str] = []
-    for name in concepts:
-        if not name or len(name) > 255:
-            continue
-        if name.lower() in existing:
-            continue
-        db.add(
-            Concept(
-                document_id=doc_id,
-                name=name[:255],
-                description=None,
+    with Session(engine) as db:
+        for name in concepts:
+            if not name or len(name) > 255:
+                continue
+            name_trimmed = name[:255]
+            # Avoid duplicates: insert only if not already present for this document
+            existing = db.exec(
+                select(Concept.id).where(
+                    Concept.document_id == doc_id,
+                    Concept.name == name_trimmed,
+                )
+            ).first()
+            if existing is not None:
+                continue
+            db.add(
+                Concept(
+                    document_id=doc_id,
+                    name=name_trimmed,
+                    description=None,
+                )
             )
-        )
-        existing.add(name.lower())
-        inserted.append(name)
+            inserted.append(name_trimmed)
+        db.commit()
 
-    db.commit()
     return inserted
