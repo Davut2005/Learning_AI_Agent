@@ -222,8 +222,7 @@ def add_youtube_to_path(
     db: Session = Depends(get_session),
 ) -> dict:
     """Add a YouTube video transcript to a learning path. Processing starts in background."""
-    from youtube_transcript_api import YouTubeTranscriptApi
-    from youtube_transcript_api._errors import TranscriptsDisabled, NoTranscriptFound
+    from app.services.youtube_service import fetch_transcript
 
     path = _get_path_or_404(path_id, current_user.id, db)
 
@@ -232,19 +231,11 @@ def add_youtube_to_path(
         raise HTTPException(status_code=400, detail="Invalid YouTube URL")
 
     try:
-        transcript = YouTubeTranscriptApi().fetch(video_id)
-        raw = transcript.to_raw_data()
-    except (TranscriptsDisabled, NoTranscriptFound) as e:
-        raise HTTPException(
-            status_code=422,
-            detail="No transcript available for this video (disabled or not found).",
-        ) from e
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Failed to fetch transcript: {e!s}") from e
-
-    full_text = " ".join(item["text"] for item in raw).strip()
-    if not full_text:
-        raise HTTPException(status_code=422, detail="Transcript is empty.")
+        full_text = fetch_transcript(video_id)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e)) from e
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e)) from e
 
     title = f"YouTube: {video_id}"
     source = f"https://www.youtube.com/watch?v={video_id}"

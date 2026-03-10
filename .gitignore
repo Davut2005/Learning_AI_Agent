@@ -16,6 +16,9 @@
 secrets/
 *.secret
 credentials.json
+# YouTube cookies — contains auth tokens, never commit
+youtube_cookies.txt
+**/youtube_cookies.txt
 service-account*.json
 
 # =============================
