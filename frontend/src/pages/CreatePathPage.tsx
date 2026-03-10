@@ -215,7 +215,7 @@ export default function CreatePathPage() {
             <p className="cp-hint">Paste video URLs — we'll extract the transcript automatically.</p>
 
             <div className="url-list">
-              {urlEntries.map((entry, idx) => (
+              {urlEntries.map((entry) => (
                 <div key={entry.id} className="url-row">
                   <input
                     type="url"
