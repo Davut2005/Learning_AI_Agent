@@ -9,6 +9,8 @@ from sqlmodel import Session, create_engine, SQLModel, select
 from core.config import settings
 from app.core.security import hash_password
 from app.models import (  # noqa: F401 — register models with metadata
+    LearningPath,
+    DailyStudyPlan,
     User,
     Document,
     DocumentChunk,
@@ -50,6 +52,12 @@ def init_db() -> None:
         with engine.connect() as conn:
             conn.execute(
                 text("ALTER TABLE document_chunks ADD COLUMN IF NOT EXISTS embedding vector(1536)")
+            )
+            conn.execute(
+                text(
+                    "ALTER TABLE documents ADD COLUMN IF NOT EXISTS "
+                    "learning_path_id INTEGER REFERENCES learning_paths(id) ON DELETE SET NULL"
+                )
             )
             conn.commit()
 

@@ -110,5 +110,15 @@ def process_document(document_id: int) -> None:
                 logger.exception("Document processing: error generating questions for concept %s: %s", concept.name, e)
 
         logger.info("Document processing completed for document_id=%s", document_id)
+
+        # If this document belongs to a learning path, regenerate the roadmap
+        with Session(engine) as db:
+            doc = db.get(Document, document_id)
+            learning_path_id = doc.learning_path_id if doc else None
+
+        if learning_path_id:
+            from app.services.roadmap_service import generate_roadmap
+            generate_roadmap(learning_path_id)
+
     except Exception as e:
         logger.exception("Document processing failed for document_id=%s: %s", document_id, e)

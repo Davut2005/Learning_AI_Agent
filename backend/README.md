@@ -1,6 +1,6 @@
 # Learning AI Tracker & Quiz — Backend
 
-FastAPI + PostgreSQL + SQLModel + Alembic. No AI logic yet; project structure and database only.
+FastAPI + PostgreSQL + SQLModel
 
 ## Stack
 
@@ -8,7 +8,6 @@ FastAPI + PostgreSQL + SQLModel + Alembic. No AI logic yet; project structure an
 - **FastAPI**
 - **PostgreSQL**
 - **SQLModel** (ORM)
-- **Alembic** (migrations)
 
 ## Setup
 
@@ -18,12 +17,6 @@ FastAPI + PostgreSQL + SQLModel + Alembic. No AI logic yet; project structure an
 
    ```bash
    uv sync
-   ```
-
-4. Run migrations:
-
-   ```bash
-   alembic upgrade head
    ```
 
 5. Start the API:
@@ -61,8 +54,6 @@ backend/
     └── config.py
 ```
 
-**Conventions:** Keep the project understandable by separating logic: one router file per feature (e.g. documents vs youtube), one schema file per domain, one model file per entity. Add new features in new router/schema files rather than overloading a single file.
-
 ## Models
 
 | Model             | Purpose                                                |
@@ -74,8 +65,3 @@ backend/
 | **Question**      | Quiz question per concept (type, options, correct_answer) |
 | **QuestionReview**| User's answer/review per question (was_correct, rating) |
 
-## Commands
-
-- **New migration:** `alembic revision --autogenerate -m "description"`
-- **Apply migrations:** `alembic upgrade head`
-- **Rollback one:** `alembic downgrade -1`

@@ -9,6 +9,7 @@ from sqlalchemy.exc import OperationalError
 
 from app.database import init_db
 from app.routers import auth, chunks, documents, questions, youtube
+from app.routers import learning_paths
 
 
 @asynccontextmanager
@@ -39,6 +40,7 @@ def read_root():
 
 
 app.include_router(auth.router)
+app.include_router(learning_paths.router)
 app.include_router(documents.router)
 app.include_router(youtube.router, prefix="/documents")
 app.include_router(chunks.router, prefix="/documents")

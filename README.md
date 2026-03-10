@@ -8,9 +8,9 @@ An AI Agent for users to track their learning path and to help to memorize the s
 
 ## Stack
 
-| Part     | Tech              |
-|----------|-------------------|
-| Backend  | FastAPI, Python   |
+| Part     | Tech                |
+|----------|---------------------|
+| Backend  | FastAPI, Python, uv |
 | Frontend | React 19, Vite, TypeScript |
 | AI       | LangChain + OpenAI (LLM + embeddings) |
 
@@ -23,8 +23,8 @@ cd backend
 python -m venv .venv
 .venv\Scripts\activate   # Windows
 # source .venv/bin/activate   # macOS/Linux
-pip install fastapi uvicorn
-python main.py
+pip install fastapi uvicorn uv
+uv run main.py
 ```
 
 API: **http://localhost:8000**
@@ -53,7 +53,7 @@ Learning_AI_Agent/
 
 **Backend**
 
-- `python main.py` — run API with hot reload (port 8000)
+- `uv run main.py` — run API with hot reload (port 8000)
 
 **Frontend**
 

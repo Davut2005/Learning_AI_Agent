@@ -141,3 +141,113 @@ export async function getQuestions(documentId?: number): Promise<QuestionItem[]>
   }
   return r.json();
 }
+
+// ── Learning Paths ───────────────────────────────────────────────────────────
+
+export type DailyPlan = {
+  id: number;
+  learning_path_id: number;
+  day_number: number;
+  title: string;
+  description: string | null;
+  chunk_ids: number[];
+  estimated_minutes: number;
+  created_at: string;
+};
+
+export type LearningPathSummary = {
+  id: number;
+  title: string;
+  description: string | null;
+  hours_per_day: number;
+  total_days: number | null;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  document_count: number;
+};
+
+export type LearningPathDetail = LearningPathSummary & {
+  user_id: number;
+  daily_plans: DailyPlan[];
+};
+
+export async function createLearningPath(data: {
+  title: string;
+  description?: string;
+  hours_per_day: number;
+}): Promise<LearningPathDetail> {
+  const r = await fetch(`${API_BASE}/learning-paths`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify(data),
+  });
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({ detail: r.statusText }));
+    throw new Error(err.detail || "Failed to create learning path");
+  }
+  return r.json();
+}
+
+export async function getLearningPaths(): Promise<LearningPathSummary[]> {
+  const r = await fetch(`${API_BASE}/learning-paths`, { headers: authHeaders() });
+  if (!r.ok) {
+    if (r.status === 401) throw new Error("Please log in again.");
+    throw new Error("Failed to load learning paths");
+  }
+  return r.json();
+}
+
+export async function getLearningPath(id: number): Promise<LearningPathDetail> {
+  const r = await fetch(`${API_BASE}/learning-paths/${id}`, { headers: authHeaders() });
+  if (!r.ok) {
+    if (r.status === 401) throw new Error("Please log in again.");
+    if (r.status === 404) throw new Error("Learning path not found");
+    throw new Error("Failed to load learning path");
+  }
+  return r.json();
+}
+
+export async function deleteLearningPath(id: number): Promise<void> {
+  const r = await fetch(`${API_BASE}/learning-paths/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(),
+  });
+  if (!r.ok && r.status !== 204) throw new Error("Failed to delete learning path");
+}
+
+export async function addDocumentToPath(
+  pathId: number,
+  file: File
+): Promise<{ document_id: number }> {
+  const form = new FormData();
+  form.append("file", file);
+  const r = await fetch(`${API_BASE}/learning-paths/${pathId}/documents`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: form,
+  });
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({ detail: r.statusText }));
+    throw new Error(err.detail || `Failed to upload ${file.name}`);
+  }
+  return r.json();
+}
+
+export async function addYouTubeToPath(
+  pathId: number,
+  url: string
+): Promise<{ document_id: number }> {
+  const form = new FormData();
+  form.append("youtube_url", url);
+  const r = await fetch(`${API_BASE}/learning-paths/${pathId}/youtube`, {
+    method: "POST",
+    headers: authHeaders(),
+    body: form,
+  });
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({ detail: r.statusText }));
+    throw new Error(err.detail || `Failed to add YouTube URL`);
+  }
+  return r.json();
+}

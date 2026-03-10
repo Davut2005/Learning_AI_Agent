@@ -17,6 +17,12 @@ class Document(SQLModel, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="users.id", index=True)
+    learning_path_id: int | None = Field(
+        default=None,
+        foreign_key="learning_paths.id",
+        index=True,
+        description="Optional learning path this document belongs to",
+    )
     title: str = Field(max_length=512)
     source: str = Field(max_length=1024, description="File path or URL")
     created_at: datetime = Field(default_factory=_utc_now)
