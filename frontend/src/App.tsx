@@ -6,8 +6,9 @@ import ProtectedRoute from "./ProtectedRoute";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
-import UploadPage from "./pages/UploadPage";
-import DocumentListPage from "./pages/DocumentListPage";
+import CreatePathPage from "./pages/CreatePathPage";
+import PathsListPage from "./pages/PathsListPage";
+import PathDetailPage from "./pages/PathDetailPage";
 import QuizPage from "./pages/QuizPage";
 import DashboardPage from "./pages/DashboardPage";
 import "./App.css";
@@ -23,18 +24,26 @@ function App() {
               <Route path="login" element={<LoginPage />} />
               <Route path="signup" element={<SignupPage />} />
               <Route
-                path="upload"
+                path="paths"
                 element={
                   <ProtectedRoute>
-                    <UploadPage />
+                    <PathsListPage />
                   </ProtectedRoute>
                 }
               />
               <Route
-                path="documents"
+                path="paths/new"
                 element={
                   <ProtectedRoute>
-                    <DocumentListPage />
+                    <CreatePathPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="paths/:id"
+                element={
+                  <ProtectedRoute>
+                    <PathDetailPage />
                   </ProtectedRoute>
                 }
               />
@@ -54,6 +63,9 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              {/* Legacy redirects */}
+              <Route path="upload" element={<Navigate to="/paths/new" replace />} />
+              <Route path="documents" element={<Navigate to="/paths" replace />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

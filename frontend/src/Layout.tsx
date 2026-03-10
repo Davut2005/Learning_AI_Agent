@@ -35,8 +35,8 @@ export default function Layout() {
         <Link to="/">Learning AI</Link>
         {user && (
           <>
-            <Link to="/upload">Upload</Link>
-            <Link to="/documents">Documents</Link>
+            <Link to="/paths">My Paths</Link>
+            <Link to="/paths/new">+ New Path</Link>
             <Link to="/quiz">Quiz</Link>
             <Link to="/dashboard">Dashboard</Link>
           </>
