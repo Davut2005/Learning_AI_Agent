@@ -14,6 +14,7 @@ from app.services.chunking import chunk_and_store
 from app.services.concept_service import extract_concepts_from_chunk
 from app.services.embedding_service import create_embedding
 from app.services.question_service import generate_questions_for_concept
+from app.services.text_extraction import extract_text
 from app.services.vector_store import insert_chunk_embedding
 from core.config import settings
 
@@ -28,24 +29,28 @@ def _get_upload_root() -> Path:
 
 def _read_document_text(source: str) -> str | None:
     """
-    Read document text from file for .txt and .md. Returns None for URLs or unsupported types.
+    Extract text from an uploaded file (TXT, MD, PDF, DOCX).
+    Returns None for YouTube/HTTP sources or if extraction fails.
     """
     if not source or source.startswith("http://") or source.startswith("https://"):
         return None
+
     upload_root = _get_upload_root()
     path = (upload_root / source).resolve()
+
     if not path.exists() or not path.is_file():
-        logger.warning("Document processing: file not found %s", path)
+        logger.warning("Document processing: file not found at %s", path)
         return None
-    suffix = path.suffix.lower()
-    if suffix not in (".txt", ".md"):
-        # PDF/DOCX could be added here with optional libs
-        logger.warning("Document processing: unsupported file type %s (only .txt, .md supported)", suffix)
-        return None
+
     try:
-        return path.read_text(encoding="utf-8", errors="replace").strip()
+        text = extract_text(path)
+        logger.info("Document processing: extracted %d chars from '%s'", len(text), path.name)
+        return text
+    except (ValueError, RuntimeError) as e:
+        logger.warning("Document processing: extraction failed for '%s': %s", path.name, e)
+        return None
     except Exception as e:
-        logger.warning("Document processing: failed to read file %s: %s", path, e)
+        logger.exception("Document processing: unexpected error reading '%s': %s", path.name, e)
         return None
 
 
