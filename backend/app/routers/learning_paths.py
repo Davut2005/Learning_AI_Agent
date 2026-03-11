@@ -25,7 +25,7 @@ from core.config import settings
 
 router = APIRouter(prefix="/learning-paths", tags=["learning-paths"])
 
-ALLOWED_EXTENSIONS = {".pdf", ".docx", ".txt", ".md"}
+ALLOWED_EXTENSIONS = {".pdf", ".docx", ".txt", ".md", ".jpg", ".jpeg", ".png", ".webp"}
 
 
 def _get_upload_root() -> Path:
