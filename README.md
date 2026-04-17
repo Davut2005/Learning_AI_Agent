@@ -73,7 +73,8 @@ Learning_AI_Agent/
 - **Schema (SQLModel):** On startup the backend runs `init_db()`: it enables the **pgvector** extension, creates all tables (users, documents, document_chunks, concepts, questions, question_reviews), and adds the `document_chunks.embedding` column if missing. **Use an empty database** — run `uv run main.py` and all tables are created automatically. No migrations.
 - **Auth:** Sign up and log in via the app (JWT). Upload, documents, quiz, and dashboard require authentication. If no users exist at first run, a default user (dev@local.app) is still created for quick dev testing.
 - **After upload (file or YouTube):** background pipeline: chunk → embed (OpenAI) → store vectors → **Agent 1** (concept extraction) → **Agent 2** (quiz generation). Concepts and questions appear once processing finishes.
-- **File types:** only **.pdf**, **.docx**,  **.txt** and **.md** are used for text extraction;
+- **File types:** **.pdf**, **.docx**,  **.txt** and **.md** are used for text extraction;
+- **Image types:** **.jpg**, **.jpeg**,  **.png** and **.webp** are used for text extraction;
 
 
 ## License

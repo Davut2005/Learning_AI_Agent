@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 import bcrypt
 from jose import JWTError, jwt
 
-from core.config import settings
+from ..config import settings
 
 ALGORITHM = "HS256"
 # bcrypt truncates at 72 bytes; we truncate before hashing so hash is deterministic

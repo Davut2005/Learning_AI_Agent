@@ -1,12 +1,9 @@
-"""
-Embedding service using LangChain + OpenAI embeddings.
-"""
 
 from typing import List
 
 from langchain_openai import OpenAIEmbeddings
 
-from core.config import settings
+from ..config import settings
 
 DEFAULT_MODEL = "text-embedding-3-small"
 

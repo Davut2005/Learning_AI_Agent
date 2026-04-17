@@ -1,4 +1,3 @@
-"""Database engine and session for SQLModel + PostgreSQL. Tables created on startup (no Alembic)."""
 
 import logging
 
@@ -6,9 +5,9 @@ from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 from sqlmodel import Session, create_engine, SQLModel, select
 
-from core.config import settings
-from app.core.security import hash_password
-from app.models import (  # noqa: F401 — register models with metadata
+from .config import settings
+from .core.security import hash_password
+from .models import (  # noqa: F401 — register models with metadata
     LearningPath,
     DailyStudyPlan,
     User,

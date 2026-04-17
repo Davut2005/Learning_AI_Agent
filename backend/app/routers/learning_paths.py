@@ -9,19 +9,19 @@ from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPExcepti
 from sqlalchemy.exc import OperationalError
 from sqlmodel import Session, select
 
-from app.database import get_session
-from app.models import Document, DocumentChunk, User
-from app.models.learning_path import LearningPath
-from app.models.daily_study_plan import DailyStudyPlan
-from app.routers.auth import get_current_user
-from app.schemas.learning_path import (
+from ..database import get_session
+from ..models import Document, DocumentChunk, User
+from ..models.learning_path import LearningPath
+from ..models.daily_study_plan import DailyStudyPlan
+from ..routers.auth import get_current_user
+from ..schemas.learning_path import (
     DailyStudyPlanOut,
     LearningPathCreate,
     LearningPathOut,
     LearningPathSummary,
 )
-from app.services.document_processing_service import process_document
-from core.config import settings
+from ..services.document_processing_service import process_document
+from ..config import settings
 
 router = APIRouter(prefix="/learning-paths", tags=["learning-paths"])
 

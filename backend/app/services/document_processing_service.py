@@ -1,22 +1,18 @@
-"""
-Document processing pipeline: after upload, run chunk → embedding → vector store → concept extraction → question generation.
-Runs asynchronously via FastAPI BackgroundTasks.
-"""
 
 import logging
 from pathlib import Path
 
 from sqlmodel import Session, select
 
-from app.database import engine
-from app.models import Concept, Document, DocumentChunk
-from app.services.chunking import chunk_and_store
-from app.services.concept_service import extract_concepts_from_chunk
-from app.services.embedding_service import create_embedding
-from app.services.question_service import generate_questions_for_concept
-from app.services.text_extraction import extract_text
-from app.services.vector_store import insert_chunk_embedding
-from core.config import settings
+from ..database import engine
+from ..models import Concept, Document, DocumentChunk
+from .chunking import chunk_and_store
+from .concept_service import extract_concepts_from_chunk
+from .embedding_service import create_embedding
+from .question_service import generate_questions_for_concept
+from .text_extraction import extract_text
+from .vector_store import insert_chunk_embedding
+from ..config import settings
 
 logger = logging.getLogger(__name__)
 

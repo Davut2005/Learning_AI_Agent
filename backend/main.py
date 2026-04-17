@@ -1,4 +1,3 @@
-"""Learning AI Tracker & Quiz — FastAPI app. Run with: uvicorn main:app --reload."""
 
 from contextlib import asynccontextmanager
 

@@ -1,11 +1,8 @@
-"""
-Reusable LLM service using LangChain + OpenAI for chat completion.
-"""
 
 from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
 
-from core.config import settings
+from ..config import settings
 
 DEFAULT_MODEL = "gpt-4o-mini"
 
